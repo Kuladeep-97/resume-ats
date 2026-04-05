@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from app.models import ResumeInput
 from app.scorer import (
     keyword_score,
@@ -8,8 +8,18 @@ from app.scorer import (
     final_score
 )
 from app.ai import generate_ai_suggestions
+import os
 
 app = FastAPI(title="ATS Resume Scoring API")
+
+
+
+def verify_rapidapi(request: Request):
+    rapid_secret = request.headers.get("x-rapidapi-proxy-secret")
+    expected = os.getenv("RAPIDAPI_PROXY_SECRET")
+
+    if rapid_secret != expected:
+        raise HTTPException(status_code=403, detail="Direct access forbidden")
 
 
 @app.get("/")
