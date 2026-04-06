@@ -9,22 +9,28 @@ from app.scorer import (
 )
 from app.ai import generate_ai_suggestions
 import os
+from fastapi.responses import JSONResponse
+
 
 app = FastAPI(title="ATS Resume Scoring API",docs_url=None,
     redoc_url=None)
 
 
 
+
 @app.middleware("http")
 async def check_rapidapi(request: Request, call_next):
 
-    # allow root (optional)
+    # allow root
     if request.url.path == "/":
         return await call_next(request)
 
-    # check if request comes from RapidAPI
+    # block non-RapidAPI requests
     if not request.headers.get("x-rapidapi-host"):
-        raise HTTPException(status_code=403, detail="Direct access forbidden")
+        return JSONResponse(
+            status_code=403,
+            content={"detail": "Direct access forbidden"}
+        )
 
     return await call_next(request)
 
