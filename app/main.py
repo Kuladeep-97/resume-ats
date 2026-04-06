@@ -10,16 +10,25 @@ from app.scorer import (
 from app.ai import generate_ai_suggestions
 import os
 
-app = FastAPI(title="ATS Resume Scoring API")
+app = FastAPI(title="ATS Resume Scoring API",docs_url=None,
+    redoc_url=None)
 
 
 
-def verify_rapidapi(request: Request):
+@app.middleware("http")
+async def check_rapidapi(request: Request, call_next):
     rapid_secret = request.headers.get("x-rapidapi-proxy-secret")
     expected = os.getenv("RAPIDAPI_PROXY_SECRET")
 
+    # allow health check or root if you want
+    if request.url.path in ["/"]:
+        return await call_next(request)
+
     if rapid_secret != expected:
         raise HTTPException(status_code=403, detail="Direct access forbidden")
+
+    response = await call_next(request)
+    return response
 
 
 @app.get("/")
@@ -28,8 +37,8 @@ def home():
 
 
 @app.post("/ats-score")
-def ats_score(data: ResumeInput):
-
+def ats_score(data: ResumeInput,request: Request):
+    verify_rapidapi(request)
     K, matched, missing = keyword_score(
     data.role,
     data.job_description,
