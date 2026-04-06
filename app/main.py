@@ -17,18 +17,16 @@ app = FastAPI(title="ATS Resume Scoring API",docs_url=None,
 
 @app.middleware("http")
 async def check_rapidapi(request: Request, call_next):
-    rapid_secret = request.headers.get("x-rapidapi-proxy-secret")
-    expected = os.getenv("RAPIDAPI_PROXY_SECRET")
 
-    # allow health check or root if you want
-    if request.url.path in ["/"]:
+    # allow root (optional)
+    if request.url.path == "/":
         return await call_next(request)
 
-    if rapid_secret != expected:
+    # check if request comes from RapidAPI
+    if not request.headers.get("x-rapidapi-host"):
         raise HTTPException(status_code=403, detail="Direct access forbidden")
 
-    response = await call_next(request)
-    return response
+    return await call_next(request)
 
 
 @app.get("/")
