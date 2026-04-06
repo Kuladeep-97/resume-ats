@@ -4,15 +4,12 @@ from app.constants import ROLE_SKILLS, DOMAIN_KEYWORDS
 
 def keyword_score(role, job_desc, resume):
 
-    role_keywords = set(ROLE_SKILLS.get(role, []))
-    domain_keywords = set(DOMAIN_KEYWORDS.get(role, []))
-
-    allowed_keywords = role_keywords.union(domain_keywords)
-
-    job_keywords = extract_keywords(job_desc, role) & allowed_keywords
-    resume_keywords = extract_keywords(resume, role) & allowed_keywords
+    role=role.lower()
+    job_keywords = extract_keywords(job_desc, role)
+    resume_keywords = extract_keywords(resume, role)
 
     matched = job_keywords & resume_keywords
+    missing = job_keywords - resume_keywords
 
     if len(job_keywords) == 0:
         return 0, [], []
