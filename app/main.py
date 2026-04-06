@@ -41,8 +41,7 @@ def home():
 
 
 @app.post("/ats-score")
-def ats_score(data: ResumeInput,request: Request):
-    verify_rapidapi(request)
+def ats_score(data: ResumeInput):
     K, matched, missing = keyword_score(
     data.role,
     data.job_description,
